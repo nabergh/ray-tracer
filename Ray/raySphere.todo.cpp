@@ -16,6 +16,7 @@ double RaySphere::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 		if (distCenter - b < mx || mx == -1) {
 			iInfo.iCoordinate = ray((distCenter - b) / tLength);
 			iInfo.material = material;
+			iInfo.normal = (iInfo.iCoordinate - center).unit();
 			return distCenter - b;
 		}
 	} else if (a < radius + 1e-5 && (distCenter < mx || mx == -1)) {

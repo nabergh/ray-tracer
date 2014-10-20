@@ -32,9 +32,10 @@ double RayTriangle::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) 
 	if (rayVector.dot(plane1.normal) < 0) {
 		return -1;
 	}
-
 	iInfo.iCoordinate = p;
 	iInfo.material = material;
+	plane.makePositive(ray.position);
+	iInfo.normal = plane.normal;
 	return rayVector.length();
 }
 BoundingBox3D RayTriangle::setBoundingBox(void) {

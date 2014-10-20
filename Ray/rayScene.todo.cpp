@@ -25,21 +25,27 @@ Ray3D RayScene::GetRay(RayCamera *camera, int i, int j, int width, int height) {
 	Point3D left = camera->direction - camera->right * wTan;
 
 	Point3D topleft = left + camera->up * hTan;
-	Point3D dx = (right - left) * ((i + 0.5) / width);
-	Point3D dy = (bottom - top) * ((j + 0.5) / height);
+	Point3D dx = (right - left) * (((width - i) + 0.5) / width);
+	Point3D dy = (bottom - top) * (((height - j) + 0.5) / height);
 	Point3D result = topleft + dx + dy;
 
 	return Ray3D(camera->position, result);
 }
 
 Point3D RayScene::GetColor(Ray3D ray, int rDepth, Point3D cLimit) {
-	Point3D behind = ray(-1);
-	RayIntersectionInfo inter = {NULL, behind, Point3D(), Point2D()};
+	RayIntersectionInfo inter = {NULL, Point3D(0,0,0), Point3D(0,0,0), Point2D(0,0)};
 	double result = group->intersect(ray, inter, -1);
 	if (result > 0) {
-		return Point3D(1.0, 1.0, 1.0);
-	} else
-		return Point3D(0.0, 0.0, 0.0);
+		Point3D color = Point3D(0.0, 0.0, 0.0);
+		color += inter.material->ambient * ambient;
+		color += inter.material->emissive;
+		for (int i = 0; i < 3; ++i) {
+			if (color[i] > 1.0) {
+				color[i] = 1.0;
+			}
+		}
+		return color;
+	} else return background;
 }
 
 //////////////////
@@ -49,3 +55,14 @@ void RayMaterial::drawOpenGL(void) {
 }
 void RayTexture::setUpOpenGL(void) {
 }
+
+
+
+		// printf("%f %f %f   %f %f %f\n", inter.material->ambient[0], inter.material->ambient[1], inter.material->ambient[2], inter.material->emissive[0], inter.material->emissive[1], inter.material->emissive[2]);
+
+
+
+
+
+
+
