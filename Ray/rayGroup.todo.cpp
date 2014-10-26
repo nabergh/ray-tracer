@@ -7,18 +7,22 @@
 ////////////////////////
 double RayGroup::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 	RayIntersectionInfo inter = {NULL, Point3D(0, 0, 0), Point3D(0, 0, 0), Point2D(0, 0)};
+	ray = getInverseMatrix() * ray;
 	for (int i = 0; i < sNum; ++i) {
 		if (shapes[i]->intersect(ray, inter, mx) > 0) {
+			inter.iCoordinate = getMatrix() * inter.iCoordinate;
+			inter.normal = getNormalMatrix().multDirection(inter.normal).unit();
 			double t = (inter.iCoordinate - ray.position).length();
 			mx = t;
 			iInfo.iCoordinate = inter.iCoordinate;
 			iInfo.material = inter.material;
+			iInfo.normal = inter.normal;
 		}
 	}
 	if (inter.material == NULL) {
 		return -1;
 	}
-	return mx;
+	return mx / ray.direction.length();
 }
 
 BoundingBox3D RayGroup::setBoundingBox(void) {
@@ -26,6 +30,8 @@ BoundingBox3D RayGroup::setBoundingBox(void) {
 }
 
 int StaticRayGroup::set(void) {
+	inverseTransform = localTransform.invert();
+	normalTransform = localTransform.transpose().invert();
 	return 1;
 }
 //////////////////

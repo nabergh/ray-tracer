@@ -7,22 +7,24 @@
 //  Ray-tracing stuff //
 ////////////////////////
 double RaySphere::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
-	double distCenter = (center - ray.position).length();
 	double tLength = ray.direction.length();
-	Point3D p = ray(distCenter / tLength);
+	Point3D toCenter = center - ray.position;
+	double pLength = ray.direction.unit().dot(toCenter);
+	Point3D p = ray(pLength / tLength);
 	double a = (p - center).length();
 	if (a < radius - 1e-5) {
 		double b = sqrt(radius * radius - a * a);
-		if (distCenter - b < mx || mx == -1) {
-			iInfo.iCoordinate = ray((distCenter - b) / tLength);
+		if ((pLength - b) / tLength < mx || mx == -1) {
+			iInfo.iCoordinate = ray((pLength - b) / tLength);
 			iInfo.material = material;
 			iInfo.normal = (iInfo.iCoordinate - center).unit();
-			return distCenter - b;
+			return (pLength - b) / tLength;
 		}
-	} else if (a < radius + 1e-5 && (distCenter < mx || mx == -1)) {
+	} else if (a < radius + 1e-5 && (pLength / tLength < mx || mx == -1)) {
 		iInfo.iCoordinate = p;
 		iInfo.material = material;
-		return distCenter;
+		iInfo.normal = (iInfo.iCoordinate - center).unit();
+		return pLength / tLength;
 	}
 	return -1;
 }

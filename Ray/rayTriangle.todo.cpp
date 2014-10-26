@@ -10,10 +10,13 @@ void RayTriangle::initialize(void) {
 	plane = Plane3D(v[0]->position, v[1]->position, v[2]->position);
 }
 double RayTriangle::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
-	double t = -1 * plane(ray.position) / (ray.direction.dot(plane.normal));
+	double t = -1 * (ray.position.dot(plane.normal) + plane.distance) / (ray.direction.unit().dot(plane.normal));
+	if (t <= 0) {
+		return -1;
+	}
 	Point3D p = ray(t);
 	Point3D rayVector = p - ray.position;
-	if (rayVector.length() > mx && mx > 0) {
+	if (rayVector.length() / ray.direction.length() > mx && mx > 0) {
 		return -1;
 	}
 
@@ -36,7 +39,7 @@ double RayTriangle::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) 
 	iInfo.material = material;
 	plane.makePositive(ray.position);
 	iInfo.normal = plane.normal;
-	return rayVector.length();
+	return rayVector.length() / ray.direction.length();
 }
 BoundingBox3D RayTriangle::setBoundingBox(void) {
 	return bBox;
