@@ -7,6 +7,7 @@
 ////////////////////////
 double RayGroup::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 	RayIntersectionInfo inter = {NULL, Point3D(0, 0, 0), Point3D(0, 0, 0), Point2D(0, 0)};
+	Ray3D oldray = ray;
 	ray = getInverseMatrix() * ray;
 	for (int i = 0; i < sNum; ++i) {
 		if (shapes[i]->intersect(ray, inter, mx) > 0) {

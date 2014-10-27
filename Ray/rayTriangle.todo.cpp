@@ -14,7 +14,7 @@ double RayTriangle::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) 
 	if (t <= 0) {
 		return -1;
 	}
-	Point3D p = ray(t);
+	Point3D p = ray(t / ray.direction.length());
 	Point3D rayVector = p - ray.position;
 	if (rayVector.length() / ray.direction.length() > mx && mx > 0) {
 		return -1;
