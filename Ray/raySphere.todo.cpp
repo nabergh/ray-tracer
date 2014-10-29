@@ -14,11 +14,20 @@ double RaySphere::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 	double a = (p - center).length();
 	if (a < radius - 1e-5) {
 		double b = sqrt(radius * radius - a * a);
-		if ((pLength - b) / tLength < mx || mx == -1) {
-			iInfo.iCoordinate = ray((pLength - b) / tLength);
+		double iLength;
+		bool inside = (ray.position - center).length() < radius + 1e-5;
+		// if (inside)
+		//  iLength = pLength + b;
+		// else
+		iLength = pLength - b;
+		if (iLength / tLength < mx || mx == -1) {
+			iInfo.iCoordinate = ray(iLength / tLength);
 			iInfo.material = material;
 			iInfo.normal = (iInfo.iCoordinate - center).unit();
-			return (pLength - b) / tLength;
+			if (inside) {
+				iInfo.normal = iInfo.normal.negate();
+			}
+			return iLength / tLength;
 		}
 	} else if (a < radius + 1e-5 && (pLength / tLength < mx || mx == -1)) {
 		iInfo.iCoordinate = p;

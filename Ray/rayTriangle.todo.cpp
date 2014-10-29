@@ -11,7 +11,7 @@ void RayTriangle::initialize(void) {
 }
 double RayTriangle::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 	double t = -1 * (ray.position.dot(plane.normal) + plane.distance) / (ray.direction.unit().dot(plane.normal));
-	if (t <= 0) {
+	if (t <= 1e-5) {
 		return -1;
 	}
 	Point3D p = ray(t / ray.direction.length());

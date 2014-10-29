@@ -841,7 +841,7 @@ int RayScene::RayTrace(const int& width,const int& height,const int& rLimit,cons
 		printf("%3.1f\r",(float)i/width*100);
 		for(j=0;j<height;j++){
 			ray=GetRay(camera,i,height-j-1,width,height);
-			c=GetColor(ray,rLimit,Point3D(cLimit,cLimit,cLimit));
+			c=GetColor(ray,rLimit,Point3D(cLimit, cLimit, cLimit));
 			p.r=(int)(c[0]*255);
 			p.g=(int)(c[1]*255);
 			p.b=(int)(c[2]*255);

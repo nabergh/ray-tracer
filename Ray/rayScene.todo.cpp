@@ -8,11 +8,19 @@
 ///////////////////////
 
 Point3D RayScene::Reflect(Point3D v, Point3D n) {
-	return Point3D();
+	return (n * n.dot(v.negate()) * 2 - v.negate()).unit();
 }
 
 int RayScene::Refract(Point3D v, Point3D n, double ir, Point3D &refract) {
-	return 0;
+	Point3D n2 = v.unit() ^ n;
+	float sin1 = (n2).length();
+	if (sin1 / ir > 1 || sin1 / ir < -1) {
+		return 0;
+	}
+	float theta2 = asin(sin1 / ir);
+	Point3D t = n2.unit() ^ n;
+	refract = t * cos(theta2) + n.negate() * (sin1 / ir);
+	return 1;
 }
 
 Ray3D RayScene::GetRay(RayCamera *camera, int i, int j, int width, int height) {
@@ -36,15 +44,37 @@ Point3D RayScene::GetColor(Ray3D ray, int rDepth, Point3D cLimit) {
 	RayIntersectionInfo inter = {NULL, Point3D(0, 0, 0), Point3D(0, 0, 0), Point2D(0, 0)};
 	ray.direction = ray.direction.unit();
 	double result = group->intersect(ray, inter, -1);
-	if (result > 0) {
+	if (result > 1e-5) {
 		Point3D color = Point3D(0.0, 0.0, 0.0);
 		color += inter.material->ambient * ambient;
 		color += inter.material->emissive;
 		for (int i = 0; i < lightNum; ++i) {
 			int shadow = 0;
-			if (!lights[i]->isInShadow(inter, group, shadow)) {
-				color += lights[i]->getDiffuse(ray.position, inter);
-				color += lights[i]->getSpecular(ray.position, inter);
+			RayIntersectionInfo iInfo = inter;
+			Point3D transparency = Point3D(1, 1, 1);
+			if (lights[i]->isInShadow(iInfo, group, shadow)) {
+				transparency = lights[i]->transparency(iInfo, group, cLimit);
+			}
+			// printf("%f %f %f\n", transparency);
+			if (transparency[0] > 0 || transparency[1] > 0 || transparency[2] > 0) {
+				color += transparency * lights[i]->getDiffuse(ray.position, inter);
+				color += transparency * lights[i]->getSpecular(ray.position, inter);
+			}
+		}
+		if (rDepth > 1) {
+			Point3D totalSpec = cLimit / inter.material->specular;
+			if (totalSpec[0] < 1 || totalSpec[1] < 1 || totalSpec[2] < 1) {
+				Point3D c = GetColor(Ray3D(inter.iCoordinate, Reflect(ray.direction, inter.normal) * 1e-5), rDepth - 1, totalSpec);
+				if (c[0] != background[0] && c[1] != background[1] && c[2] != background[2]) {
+					color += inter.material->specular * c;
+				}
+			}
+			if (inter.material->transparent[0] != 0 || inter.material->transparent[1] != 0 || inter.material->transparent[2] != 0) {
+				Point3D dir;
+				Point3D c = GetColor(Ray3D(inter.iCoordinate + ray.direction * 1e-5, ray.direction), rDepth - 1, cLimit);
+				if (c[0] != background[0] && c[1] != background[1] && c[2] != background[2]) {
+					color += inter.material->transparent * c;
+				}
 			}
 		}
 		for (int i = 0; i < 3; ++i) {
@@ -53,7 +83,7 @@ Point3D RayScene::GetColor(Ray3D ray, int rDepth, Point3D cLimit) {
 			}
 		}
 		return color;
-	} else return background;
+	} return background;
 }
 
 //////////////////
