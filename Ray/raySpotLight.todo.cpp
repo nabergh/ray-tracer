@@ -43,6 +43,19 @@ int RaySpotLight::isInShadow(RayIntersectionInfo &iInfo, RayShape *shape, int &i
 	return mx > 0;
 }
 Point3D RaySpotLight::transparency(RayIntersectionInfo &iInfo, RayShape *shape, Point3D cLimit) {
+	cLimit = cLimit * iInfo.material->transparent;
+	if (cLimit[0] < 1 || cLimit[1] < 1 || cLimit[2] < 1) {
+		RayIntersectionInfo inter = {NULL, Point3D(0, 0, 0), Point3D(0, 0, 0), Point2D(0, 0)};
+		int shadow = 0;
+		Point3D tran = Point3D(1, 1, 1);
+		if (isInShadow(inter, shape, shadow)) {
+			tran = transparency(inter, shape, cLimit);
+		}
+		if (inter.material == iInfo.material) {
+			tran = tran / iInfo.material->transparent;
+		}
+		return iInfo.material->transparent * tran;
+	}
 	return Point3D(1, 1, 1);
 }
 

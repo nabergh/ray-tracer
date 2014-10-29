@@ -35,10 +35,8 @@ Point3D RayDirectionalLight::transparency(RayIntersectionInfo &iInfo, RayShape *
 		int shadow = 0;
 		Point3D tran = Point3D(1, 1, 1);
 		if (isInShadow(inter, shape, shadow)) {
-			//&& (inter.material->transparent[0] > 0 || inter.material->transparent[1] > 0 || inter.material->transparent[2] > 0)) {
 			tran = transparency(inter, shape, cLimit);
 		}
-		// printf("Shadow\n");
 		if (inter.material == iInfo.material) {
 			tran = tran / iInfo.material->transparent;
 		}

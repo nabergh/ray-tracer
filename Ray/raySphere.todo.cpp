@@ -15,9 +15,9 @@ double RaySphere::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 	if (a < radius - 1e-5) {
 		double b = sqrt(radius * radius - a * a);
 		double iLength;
-		bool inside = (ray.position - center).length() < radius + 1e-5;
+		bool inside = (ray.position - center).length() < radius + 1e-6;
 		// if (inside)
-		//  iLength = pLength + b;
+		//  iLength = pLength - b;
 		// else
 		iLength = pLength - b;
 		if (iLength / tLength < mx || mx == -1) {
@@ -25,7 +25,7 @@ double RaySphere::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 			iInfo.material = material;
 			iInfo.normal = (iInfo.iCoordinate - center).unit();
 			if (inside) {
-				iInfo.normal = iInfo.normal.negate();
+			 iInfo.normal = iInfo.normal.negate();
 			}
 			return iLength / tLength;
 		}
