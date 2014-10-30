@@ -10,14 +10,17 @@ double RayGroup::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 	Ray3D oldray = ray;
 	ray = getInverseMatrix() * ray;
 	for (int i = 0; i < sNum; ++i) {
-		if (shapes[i]->intersect(ray, inter, mx) > 0) {
-			inter.iCoordinate = getMatrix() * inter.iCoordinate;
-			inter.normal = getNormalMatrix().multDirection(inter.normal).unit();
-			double t = (inter.iCoordinate - ray.position).length();
-			mx = t;
-			iInfo.iCoordinate = inter.iCoordinate;
-			iInfo.material = inter.material;
-			iInfo.normal = inter.normal;
+		double bBoxInter = shapes[i]->bBox.intersect(ray);
+		if (bBoxInter > -1 && (mx <= -1 || bBoxInter < mx)) {
+			if (shapes[i]->intersect(ray, inter, mx) > 0) {
+				inter.iCoordinate = getMatrix() * inter.iCoordinate;
+				inter.normal = getNormalMatrix().multDirection(inter.normal).unit();
+				double t = (inter.iCoordinate - ray.position).length();
+				mx = t;
+				iInfo.iCoordinate = inter.iCoordinate;
+				iInfo.material = inter.material;
+				iInfo.normal = inter.normal;
+			}
 		}
 	}
 	if (inter.material == NULL) {
@@ -27,6 +30,13 @@ double RayGroup::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 }
 
 BoundingBox3D RayGroup::setBoundingBox(void) {
+	bBox = BoundingBox3D();
+	for (int i = 0; i < sNum; ++i) {
+		shapes[i]->setBoundingBox();
+		bBox += shapes[i]->bBox.transform(getMatrix());
+	}
+	printf("%f %f %f   %f %f %f\n", bBox.p[0][0], bBox.p[0][1], bBox.p[0][2], bBox.p[1][0], bBox.p[1][1], bBox.p[1][2]);
+
 	return bBox;
 }
 

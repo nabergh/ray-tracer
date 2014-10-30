@@ -13,14 +13,6 @@ Point3D RayScene::Reflect(Point3D v, Point3D n) {
 
 int RayScene::Refract(Point3D v, Point3D n, double ir, Point3D &refract) {
 	float costheta1 = v.unit().dot(n.negate());
-	// Point3D n2 = v.unit().negate() ^ n;
-	// float sin1 = (n2).length();
-	// if (sin1 / ir > 1 || sin1 / ir < -1) {
-	//  return 0;
-	// }
-	// float theta2 = asin(sin1 / ir);
-	// Point3D t = n2.unit() ^ n;
-	// refract = t * cos(theta2) + n.negate() * (sin1 / ir);
 	refract = v * ir + n * (ir * costheta1 - sqrt(1 - ir * ir * (1 - costheta1 * costheta1)));
 	return 1;
 }
@@ -47,9 +39,6 @@ Point3D RayScene::GetColor(Ray3D ray, int rDepth, Point3D cLimit) {
 	ray.direction = ray.direction.unit();
 	double result = group->intersect(ray, inter, -1);
 	if (result > 1e-5) {
-		// if (ray.direction.dot(inter.normal) < 0 && inter.material->diffuse[2] == 0.25) {
-		//  printf("%f\n", ray.direction.dot(inter.normal));
-		// }
 		Point3D color = Point3D(0.0, 0.0, 0.0);
 		color += inter.material->ambient * ambient;
 		color += inter.material->emissive;
@@ -60,7 +49,6 @@ Point3D RayScene::GetColor(Ray3D ray, int rDepth, Point3D cLimit) {
 			if (lights[i]->isInShadow(iInfo, group, shadow)) {
 				transparency = lights[i]->transparency(iInfo, group, cLimit);
 			}
-			// printf("%f %f %f\n", transparency);
 			if (transparency[0] > 0 || transparency[1] > 0 || transparency[2] > 0) {
 				color += transparency * lights[i]->getDiffuse(ray.position, inter);
 				color += transparency * lights[i]->getSpecular(ray.position, inter);
@@ -79,9 +67,7 @@ Point3D RayScene::GetColor(Ray3D ray, int rDepth, Point3D cLimit) {
 				double ir = inter.material->refind;
 				if (Refract(ray.direction, inter.normal, ir, dir)) {
 					Point3D c = GetColor(Ray3D(inter.iCoordinate + ray.direction * 1e-5, dir), rDepth - 1, cLimit);
-					// if (c[0] != background[0] && c[1] != background[1] && c[2] != background[2]) {
 					color += inter.material->transparent * c;
-					// }
 				}
 			}
 		}
