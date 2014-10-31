@@ -1,5 +1,5 @@
 #texture_num 1
-#texture marble-texture.jpg
+#texture checkerboard.jpg
 #material_num 1
 #material
 	0.0 0.0 0.0

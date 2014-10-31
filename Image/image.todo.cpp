@@ -6,8 +6,17 @@
 // Image processing stuff //
 ////////////////////////////
 Pixel::Pixel(const Pixel32 &p) {
+	r = p.r / 255.0;
+	g = p.g / 255.0;
+	b = p.b / 255.0;
+	a = p.a / 255.0;
 }
+
 Pixel32::Pixel32(const Pixel &p) {
+	r = p.r <= 1 ? (p.r >= 0 ? p.r * 255 : 0) : 255;
+	g = p.g <= 1 ? (p.g >= 0 ? p.g * 255 : 0) : 255;
+	b = p.b <= 1 ? (p.b >= 0 ? p.b * 255 : 0) : 255;
+	a = p.a <= 1 ? (p.a >= 0 ? p.a * 255 : 0) : 255;
 }
 
 int Image32::AddRandomNoise(const float &noise, Image32 &outputImage) const {
