@@ -44,7 +44,6 @@ double RayTriangle::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) 
 BoundingBox3D RayTriangle::setBoundingBox(void) {
 	Point3D pts[3] = {v[0]->position, v[1]->position, v[2]->position};
 	bBox = BoundingBox3D(pts, 3);
-	printf("%f %f %f   %f %f %f triangle\n", bBox.p[0][0], bBox.p[0][1], bBox.p[0][2], bBox.p[1][0], bBox.p[1][1], bBox.p[1][2]);
 	return bBox;
 }
 

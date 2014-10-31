@@ -14,6 +14,9 @@ Point3D RayScene::Reflect(Point3D v, Point3D n) {
 int RayScene::Refract(Point3D v, Point3D n, double ir, Point3D &refract) {
 	float costheta1 = v.unit().dot(n.negate());
 	refract = v * ir + n * (ir * costheta1 - sqrt(1 - ir * ir * (1 - costheta1 * costheta1)));
+	if (isnan(refract[0]) || isnan(refract[1]) || isnan(refract[2])) {
+		return 0;
+	}
 	return 1;
 }
 
@@ -65,6 +68,9 @@ Point3D RayScene::GetColor(Ray3D ray, int rDepth, Point3D cLimit) {
 			if (inter.material->transparent[0] != 0 || inter.material->transparent[1] != 0 || inter.material->transparent[2] != 0) {
 				Point3D dir;
 				double ir = inter.material->refind;
+				if (ray.direction.dot(inter.normal) < 0) {
+					ir = 1 / ir;
+				}
 				if (Refract(ray.direction, inter.normal, ir, dir)) {
 					Point3D c = GetColor(Ray3D(inter.iCoordinate + ray.direction * 1e-5, dir), rDepth - 1, cLimit);
 					color += inter.material->transparent * c;

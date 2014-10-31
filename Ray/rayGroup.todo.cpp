@@ -1,32 +1,78 @@
 #include <stdlib.h>
 #include <GL/glut.h>
 #include "rayGroup.h"
+#include <vector>
+#include <algorithm>
+#include <math.h>
+using namespace std;
 
 ////////////////////////
 //  Ray-tracing stuff //
 ////////////////////////
+struct BBoxIntersection {
+	RayShape *shape;
+	BoundingBox3D *bBox;
+	double distance;
+};
+
+bool compareBBoxIntersection(BBoxIntersection b1, BBoxIntersection b2) {
+	return b1.distance < b2.distance;
+}
+
 double RayGroup::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 	RayIntersectionInfo inter = {NULL, Point3D(0, 0, 0), Point3D(0, 0, 0), Point2D(0, 0)};
 	Ray3D oldray = ray;
 	ray = getInverseMatrix() * ray;
+	vector<BBoxIntersection> bBoxes(sNum);
+	int intNo = 0;
 	for (int i = 0; i < sNum; ++i) {
-		double bBoxInter = shapes[i]->bBox.intersect(ray);
-		if (bBoxInter > -1 && (mx <= -1 || bBoxInter < mx)) {
-			if (shapes[i]->intersect(ray, inter, mx) > 0) {
-				inter.iCoordinate = getMatrix() * inter.iCoordinate;
-				inter.normal = getNormalMatrix().multDirection(inter.normal).unit();
-				double t = (inter.iCoordinate - ray.position).length();
-				mx = t;
-				iInfo.iCoordinate = inter.iCoordinate;
-				iInfo.material = inter.material;
-				iInfo.normal = inter.normal;
-			}
+		double distance = shapes[i]->bBox.intersect(ray);
+		if (distance != -1 && (mx == -1 || distance < mx)) {
+			BBoxIntersection b = {shapes[i], &shapes[i]->bBox, distance};
+			bBoxes[intNo] = b;
+			intNo++;
 		}
 	}
+	bBoxes.resize(intNo);
+	// priority_queue<BBoxIntersection, vector<BBoxIntersection>, compareBBoxIntersection> q;
+	// make_heap(bBoxes.begin(), bBoxes.end(), compareBBoxIntersection);
+	sort(bBoxes.begin(), bBoxes.end(), compareBBoxIntersection);
+	for (int i = 0; i < intNo; ++i) {
+		// printf("%f\n", bBoxes[i].distance);
+		if (bBoxes[i].distance > mx && mx != -1) {
+			break;
+		}
+		if (bBoxes[i].shape->intersect(ray, inter, mx) > 0) {
+			inter.iCoordinate = getMatrix() * inter.iCoordinate;
+			inter.normal = getNormalMatrix().multDirection(inter.normal).unit();
+			double t = (inter.iCoordinate - ray.position).length();
+			mx = t;
+			iInfo.iCoordinate = inter.iCoordinate;
+			iInfo.material = inter.material;
+			iInfo.normal = inter.normal;
+		}
+		// pop_heap(bBoxes.begin(), bBoxes.end(), compareBBoxIntersection);
+	}
+	// printf("\n");
+	// for (int i = 0; i < sNum; ++i) {
+	//  double bBoxInter = shapes[i]->bBox.intersect(ray);
+	//  if (bBoxInter > -1 && (mx <= -1 || bBoxInter < mx)) {
+	//      if (shapes[i]->intersect(ray, inter, mx) > 0) {
+	//          inter.iCoordinate = getMatrix() * inter.iCoordinate;
+	//          inter.normal = getNormalMatrix().multDirection(inter.normal).unit();
+	//          double t = (inter.iCoordinate - ray.position).length();
+	//          mx = t;
+	//          iInfo.iCoordinate = inter.iCoordinate;
+	//          iInfo.material = inter.material;
+	//          iInfo.normal = inter.normal;
+	//      }
+	//  }
+	// }
 	if (inter.material == NULL) {
 		return -1;
 	}
-	return mx / ray.direction.length();
+	return mx; // check on this
+	// return mx / ray.direction.length();
 }
 
 BoundingBox3D RayGroup::setBoundingBox(void) {
@@ -35,8 +81,6 @@ BoundingBox3D RayGroup::setBoundingBox(void) {
 		shapes[i]->setBoundingBox();
 		bBox += shapes[i]->bBox.transform(getMatrix());
 	}
-	printf("%f %f %f   %f %f %f\n", bBox.p[0][0], bBox.p[0][1], bBox.p[0][2], bBox.p[1][0], bBox.p[1][1], bBox.p[1][2]);
-
 	return bBox;
 }
 
