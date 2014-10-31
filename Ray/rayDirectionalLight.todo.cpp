@@ -7,9 +7,16 @@
 //  Ray-tracing stuff //
 ////////////////////////
 Point3D RayDirectionalLight::getDiffuse(Point3D cameraPosition, RayIntersectionInfo &iInfo) {
+	Point3D c;
+	if (iInfo.material->tex == NULL) {
+		c = iInfo.material->diffuse;
+	} else {
+		Pixel32 p = iInfo.material->tex->img->BilinearSample(iInfo.texCoordinate[0], iInfo.texCoordinate[1]);
+		c = Point3D(p.r, p.g, p.b);
+	}
 	float dot = iInfo.normal.dot(direction.negate());
 	if (dot > 0) {
-		return iInfo.material->diffuse * color * dot;
+		return c * color * dot;
 	}
 	return Point3D(0, 0, 0);
 }
@@ -22,7 +29,6 @@ Point3D RayDirectionalLight::getSpecular(Point3D cameraPosition, RayIntersection
 	return Point3D(0, 0, 0);
 }
 int RayDirectionalLight::isInShadow(RayIntersectionInfo &iInfo, RayShape *shape, int &isectCount) {
-	// RayIntersectionInfo inter = {NULL, Point3D(0, 0, 0), Point3D(0, 0, 0), Point2D(0, 0)};
 	Point3D lightDir = direction.negate();
 	Point3D origin = iInfo.iCoordinate + (lightDir * 0.0000000001);
 	float mx = shape->intersect(Ray3D(origin, lightDir), iInfo, -1);

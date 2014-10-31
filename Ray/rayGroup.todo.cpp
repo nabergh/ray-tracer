@@ -34,11 +34,8 @@ double RayGroup::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 		}
 	}
 	bBoxes.resize(intNo);
-	// priority_queue<BBoxIntersection, vector<BBoxIntersection>, compareBBoxIntersection> q;
-	// make_heap(bBoxes.begin(), bBoxes.end(), compareBBoxIntersection);
 	sort(bBoxes.begin(), bBoxes.end(), compareBBoxIntersection);
 	for (int i = 0; i < intNo; ++i) {
-		// printf("%f\n", bBoxes[i].distance);
 		if (bBoxes[i].distance > mx && mx != -1) {
 			break;
 		}
@@ -50,29 +47,13 @@ double RayGroup::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) {
 			iInfo.iCoordinate = inter.iCoordinate;
 			iInfo.material = inter.material;
 			iInfo.normal = inter.normal;
+			iInfo.texCoordinate = inter.texCoordinate;
 		}
-		// pop_heap(bBoxes.begin(), bBoxes.end(), compareBBoxIntersection);
 	}
-	// printf("\n");
-	// for (int i = 0; i < sNum; ++i) {
-	//  double bBoxInter = shapes[i]->bBox.intersect(ray);
-	//  if (bBoxInter > -1 && (mx <= -1 || bBoxInter < mx)) {
-	//      if (shapes[i]->intersect(ray, inter, mx) > 0) {
-	//          inter.iCoordinate = getMatrix() * inter.iCoordinate;
-	//          inter.normal = getNormalMatrix().multDirection(inter.normal).unit();
-	//          double t = (inter.iCoordinate - ray.position).length();
-	//          mx = t;
-	//          iInfo.iCoordinate = inter.iCoordinate;
-	//          iInfo.material = inter.material;
-	//          iInfo.normal = inter.normal;
-	//      }
-	//  }
-	// }
 	if (inter.material == NULL) {
 		return -1;
 	}
-	return mx; // check on this
-	// return mx / ray.direction.length();
+	return mx;
 }
 
 BoundingBox3D RayGroup::setBoundingBox(void) {

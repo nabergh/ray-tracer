@@ -1,3 +1,5 @@
+#texture_num 1
+#texture marble-texture.jpg
 #material_num 1
 #material
 	0.0 0.0 0.0
@@ -6,21 +8,21 @@
 	1.0 1.0 1.0 100
 	0.0 0.0 0.0
 	1.05
-	-1
+	0
 	!!
 #vertex_num 4
 #vertex
 	-2  0  2
 	 0  1  0
-	 0  0
+	 0  255
 #vertex
 	 2  0  2
 	 0  1  0
-	 0  0
+	 255  255
 #vertex
 	 2  0 -2
 	 0  1  0
-	 0  0
+	 255  0
 #vertex
 	-2  0 -2
 	 0  1  0

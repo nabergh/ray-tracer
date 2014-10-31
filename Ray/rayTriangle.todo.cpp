@@ -38,7 +38,20 @@ double RayTriangle::intersect(Ray3D ray, RayIntersectionInfo &iInfo, double mx) 
 	iInfo.iCoordinate = p;
 	iInfo.material = material;
 	plane.makePositive(ray.position);
-	iInfo.normal = plane.normal;
+
+	iInfo.normal = Point3D(0, 0, 0);
+	Point3D side2 = v[1]->position - v[0]->position;
+	Point3D side1 = v[2]->position - v[0]->position;
+	float totalArea = (side1 ^ side2).length() / 2;
+	float gamma = ((p - v[0]->position) ^ side2).length() / (2 * totalArea);
+	float beta = ((p - v[0]->position) ^ side1).length() / (2 * totalArea);
+	float alpha = 1 - beta - gamma;
+	iInfo.normal += v[0]->normal * alpha;
+	iInfo.normal += v[1]->normal * beta;
+	iInfo.normal += v[2]->normal * gamma;
+	iInfo.normal = iInfo.normal.unit();
+
+	iInfo.texCoordinate = v[0]->texCoordinate * alpha + v[1]->texCoordinate * beta + v[2]->texCoordinate * gamma;
 	return rayVector.length() / ray.direction.length();
 }
 BoundingBox3D RayTriangle::setBoundingBox(void) {

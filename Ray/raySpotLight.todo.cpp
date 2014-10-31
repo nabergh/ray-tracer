@@ -8,6 +8,13 @@
 //  Ray-tracing stuff //
 ////////////////////////
 Point3D RaySpotLight::getDiffuse(Point3D cameraPosition, RayIntersectionInfo &iInfo) {
+	Point3D c;
+	if (iInfo.material->tex == NULL) {
+		c = iInfo.material->diffuse;
+	} else {
+		Pixel32 p = iInfo.material->tex->img->BilinearSample(iInfo.texCoordinate[0], iInfo.texCoordinate[1]);
+		c = Point3D(p.r, p.g, p.b);
+	}
 	Point3D rayDir = iInfo.iCoordinate - location;
 	float rayDirDot = rayDir.unit().dot(direction);
 	if (rayDirDot > cos(cutOffAngle)) {
@@ -15,7 +22,7 @@ Point3D RaySpotLight::getDiffuse(Point3D cameraPosition, RayIntersectionInfo &iI
 		if (dot > 0) {
 			float d = rayDir.length();
 			Point3D attenuation = color / (constAtten + linearAtten * d + quadAtten * d * d);
-			return iInfo.material->diffuse * attenuation * pow(rayDirDot, dropOffRate) * dot;
+			return c * attenuation * pow(rayDirDot, dropOffRate) * dot;
 		}
 	}
 	return Point3D(0, 0, 0);
@@ -36,10 +43,9 @@ Point3D RaySpotLight::getSpecular(Point3D cameraPosition, RayIntersectionInfo &i
 	return Point3D(0, 0, 0);
 }
 int RaySpotLight::isInShadow(RayIntersectionInfo &iInfo, RayShape *shape, int &isectCount) {
-	RayIntersectionInfo inter = {NULL, Point3D(0, 0, 0), Point3D(0, 0, 0), Point2D(0, 0)};
 	Point3D lightDir = (location - iInfo.iCoordinate).unit();
 	Point3D origin = iInfo.iCoordinate + (lightDir * 0.0000001);
-	float mx = shape->intersect(Ray3D(origin, lightDir), inter, -1);
+	float mx = shape->intersect(Ray3D(origin, lightDir), iInfo, -1);
 	return mx > 0;
 }
 Point3D RaySpotLight::transparency(RayIntersectionInfo &iInfo, RayShape *shape, Point3D cLimit) {
